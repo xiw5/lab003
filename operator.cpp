@@ -139,26 +139,22 @@ std::string *multi(clientstruct *c)
 std::string *exec(serverstruct *s,clientstruct *c)
 {
   std::cout<<"111"<<std::endl;
+  //std::cout<<c->command[0]->value[0]<<std::endl;
+  std::cout<<"222"<<std::endl;
   c->multi = 0;
-  std::string *res;
-  std::cout<<c->command[1]->opera<<std::endl; 
+  std::string *res = new std::string;
+  char n[100];
+  sprintf(n,"%d",c->command.size());
+  * res = "*";
+  * res += n;
+  * res += '\r';
+  * res += '\n';
+  //std::cout<<c->command[1]->opera<<std::endl; 
   for(auto it=(c->command.begin());it != c->command.end();it++)
   {
-    std::cout<<(*it)->opera<<std::endl;
-    if(it == c->command.begin())
+    //std::cout<<(*it)->opera<<std::endl;
     {
-      if((*it)->opera == SET)
-        res = set(*it,s,c);
-      if((*it)->opera == GET)
-        res = get(*it,s,c);
-      if((*it)->opera == DEL)
-        res = del(*it,s,c);
-      if((*it)->opera == EXIST)
-        res = exist(*it,s,c);
-    }
-    else
-    {
-      std::cout<<"333"<<std::endl;
+    //  std::cout<<"333"<<std::endl;
       std::string *smalls;
       if((*it)->opera == SET)
         smalls = set(*it,s,c);
@@ -176,6 +172,6 @@ std::string *exec(serverstruct *s,clientstruct *c)
     //delete *it;
   }
   std::cout<<*res<<std::endl;
-  c->command.clear();
+  //c->command.clear();
   return res;
 }

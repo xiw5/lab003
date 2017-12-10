@@ -14,5 +14,6 @@ int main()
   {
     running(s);
   }
+  close(s->listener);
   return 0;
 }

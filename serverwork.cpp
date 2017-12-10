@@ -61,13 +61,13 @@ serverstruct *buildserver()
 void running(serverstruct *s)
 {
   fd_set read_fds =  s->master;
- 
+//  std::cout<<"11"<<std::endl;
   if(select(s->max_fd+1,&read_fds,nullptr,nullptr,nullptr) == -1)
   {
     std::cerr<<"select "<<std::endl;
     return;
   }
-
+//  std::cout<<"22"<<std::endl;
   struct sockaddr_storage remoteaddr;
   char remoteIP[INET6_ADDRSTRLEN];
   for(clientstruct *c = s->head;c != nullptr;c = c->next)
@@ -91,8 +91,20 @@ void running(serverstruct *s)
       FD_CLR(c->sockfd, &s->master);
       if(c->pre != nullptr)
         c->pre->next = c->next;
+      else
+        s->head = c->next;
       if(c->next != nullptr)
         c->next->pre = c->pre;
+      c->delmulti = 0;
+  //    std::cout<<"444"<<std::endl;
+      for(auto cit = c->command.begin();cit != c->command.end();cit++)
+      {
+        deletecommand(*cit);
+        delete *cit;
+      }
+    //  std::cout<<"555"<<std::endl;
+      c->command.clear();
+      delete c;
       continue;
     }
     std::string *p = handle(buf,s,nbytes,c);
@@ -101,6 +113,7 @@ void running(serverstruct *s)
       std::cerr<<"send"<<std::endl;
     delete p;
   }
+  //std::cout<<"33"<<std::endl;
   if(FD_ISSET(s->listener,&read_fds))
   {
     socklen_t addrlen = sizeof(remoteaddr);
@@ -127,21 +140,40 @@ void running(serverstruct *s)
   }
 }
 
-void deletecommand(struct commandstruct *command,clientstruct *c)
+void deletecommand(struct commandstruct *command)
 {
-  if(command->opera == MULTI)
-    c->delmulti = 1;
-  if(command->opera == EXEC)
-    c->delmulti = 0;
-  if(command->next != nullptr)
-    deletecommand(command->next,c);
-  if(command->opera == MULTI)
-    c->delmulti = 0;
-  
   for(auto it = command->value.begin();it != command->value.end();it++)
     delete *it;
-    command->value.clear();
-    delete command;
+  command->value.clear();
+}
+
+void deletecommand(struct commandstruct *command,clientstruct *c)
+{
+  commandstruct *nowcommand;
+  for(;;)
+  {
+    if(command == nullptr)
+      break;
+    nowcommand = command->next;
+    if(command->opera == EXEC)
+    {
+      c->delmulti = 0;
+      for(auto cit = c->command.begin();cit != c->command.end();cit++)
+      {
+        deletecommand(*cit);
+        delete *cit;
+      }
+      c->command.clear();
+    }
+    if(c->delmulti == 0)
+    {
+      deletecommand(command);
+      if(command->opera == MULTI)
+        c->delmulti =1;
+      delete command;
+    }
+    command = nowcommand;
+  }
 }
 
 std::string *handle(char *p,serverstruct *s,int nbytes,clientstruct *c)
