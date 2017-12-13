@@ -2,6 +2,7 @@
 #include"serverwork.h"
 #include"mix.h"
 #include"operator.h"
+#include"afo.h"
 
 serverstruct *buildserver()
 {
@@ -60,6 +61,7 @@ serverstruct *buildserver()
 
 void running(serverstruct *s)
 {
+  std::ofstream fout("eof.txt",std::ios::out|std::ios::app);
   fd_set read_fds =  s->master;
 //  std::cout<<"11"<<std::endl;
   if(select(s->max_fd+1,&read_fds,nullptr,nullptr,nullptr) == -1)
@@ -107,6 +109,9 @@ void running(serverstruct *s)
       delete c;
       continue;
     }
+    for(int i = 0;i<nbytes;i++)
+      fout<<buf[i];
+    fout<<"\0";
     std::string *p = handle(buf,s,nbytes,c);
     int len = (*p).size();                                                              
     if(sendall(c->sockfd,(*p).c_str(),&len) == -1)
@@ -129,16 +134,22 @@ void running(serverstruct *s)
         s->max_fd = newfd;
       FD_SET(newfd,&(s->master));
       std::cout<<"connect form: "<<inet_ntop(remoteaddr.ss_family,get_in_addr((struct sockaddr *)&remoteaddr),remoteIP,INET6_ADDRSTRLEN)<<" socket: "<<newfd<<std::endl;
-      clientstruct *c = new clientstruct;
-      c->sockfd = newfd;
-      if(s->head != nullptr)
-        s->head->pre = c;
-      c->next = s->head;
-      c->pre = nullptr;
-      s->head = c;
+      buildclient(s,newfd);
     }
   }
 }
+
+void buildclient(serverstruct *s,int newfd)
+{
+   clientstruct *c = new clientstruct;
+   c->sockfd = newfd;
+   if(s->head != nullptr)
+     s->head->pre = c;
+   c->next = s->head;
+   c->pre = nullptr;
+   s->head = c;
+}
+
 
 void deletecommand(struct commandstruct *command)
 {
@@ -155,7 +166,7 @@ void deletecommand(struct commandstruct *command,clientstruct *c)
     if(command == nullptr)
       break;
     nowcommand = command->next;
-    if(command->opera == EXEC)
+    if(command->opera == EXEC || command->opera == DISCARD)
     {
       c->delmulti = 0;
       for(auto cit = c->command.begin();cit != c->command.end();cit++)
@@ -183,29 +194,25 @@ std::string *handle(char *p,serverstruct *s,int nbytes,clientstruct *c)
  // std::cout<<command->next<<std::endl;
  // std::cout<<command->key<<std::endl;
 //  std::cout<<*(command->value[0])<<std::endl;
-  std::string *res;
-  if(command->opera == SET)
-    res = set(command,s,c);
-  //std::cout<<"sdsd"<<std::endl;
-  if(command->opera == GET)
-    res = get(command,s,c);
-  //std::cout<<"get "<<std::endl;
-  if(command->opera == EXIST)
-    res = exist(command,s,c);
-  //std::cout<<"exist"<<std::endl;
-  if(command->opera == DEL)
-    res = del(command,s,c);
- // std::cout<<*res<<std::endl;
-  if(command->opera == MULTI)
-    res = multi(c);
-  if(command->opera == EXEC)
-    res = exec(s,c);
-  struct commandstruct *tem =command;
-  for(;tem->next != nullptr;)
+  std::string *res = new std::string;
+  *res = "*";
+  struct commandstruct *tem = command;
+  int num = 0;
+  char cnum[100];
+  for(;tem !=nullptr;)
+  {
+    num++;
+    tem = tem->next;
+  }
+  sprintf(cnum,"%d",num);
+  *res += cnum;
+  *res += '\r';
+  *res += '\n';
+  tem = command;
+  for(;tem != nullptr;)
   {
     std::string * smalls;
     //std::cout<<"22"<<std::endl;
-    tem = tem->next;
     if(tem->opera == SET)
     {
    //std::cout<<*(command->value[0])<<std::endl;
@@ -222,6 +229,9 @@ std::string *handle(char *p,serverstruct *s,int nbytes,clientstruct *c)
       smalls = multi(c);
     if(tem->opera == EXEC)
       smalls = exec(s,c);
+    if(tem->opera == DISCARD)
+      smalls = discard(c);
+    tem = tem->next;
     *res += *smalls;
     delete smalls;
     //for(auto it = command->value.begin();it != command->value.end();it++)

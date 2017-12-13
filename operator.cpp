@@ -1,5 +1,6 @@
 #include"type.h"
 #include"operator.h"
+#include"serverwork.h"
 
 std::string *set(commandstruct *command,serverstruct *s,clientstruct *c)
 {
@@ -13,7 +14,7 @@ std::string *set(commandstruct *command,serverstruct *s,clientstruct *c)
     //std::cout<<c->command[0]->opera<<std::endl;
     return p;
   }
-  std::cout<<command->key<<"  "<<command->opera<<"  "<<*(command->value[0])<<std::endl;
+  //std::cout<<command->key<<"  "<<command->opera<<"  "<<*(command->value[0])<<std::endl;
   std::unordered_map<std::string,std::string>::iterator it = s->hashtable.find(command->key);
   if(it != s->hashtable.end())
     s->hashtable.erase(it);
@@ -127,8 +128,22 @@ std::string *nottrue()
 
 std::string *multi(clientstruct *c)
 {
+  if(c->multi == 1)
+    return nottrue();
   c->multi = 1;
   c->command.clear();
+  std::string *p = new std::string;
+  *p = "+OK";
+  *p += '\r';
+  *p += '\n';
+  return p;
+}
+
+std::string *discard(clientstruct *c)
+{
+  if(c->multi == 0)
+    return nottrue();
+  c->multi = 0;
   std::string *p = new std::string;
   *p = "+OK";
   *p += '\r';

@@ -17,8 +17,9 @@
 #include<iostream>
 #include<functional>
 #include<string>
+#include<fstream>
 
-#define PORT "3993"
+#define PORT "4000"
 #define BACKLOG 10
 #define MAXDATASIZE 1024
 #define makepair(a,b) std::pair<std::string,std::string>(a,b) 
@@ -29,6 +30,8 @@ const std::string DEL="DEL";
 const std::string EXIST="EXIST";
 const std::string MULTI="MULTI";
 const std::string EXEC="EXEC";
+const std::string DISCARD="DISCARD";
+
 
 struct commandstruct 
 {

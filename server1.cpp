@@ -1,5 +1,6 @@
 #include"type.h"
 #include"serverwork.h"
+#include"afo.h"
 
 int main()
 {
@@ -10,6 +11,7 @@ int main()
     std::cerr<<"buildserver "<<std::endl;
     return 0;
   }
+  build_afo(s);
   for(;;)
   {
     running(s);
