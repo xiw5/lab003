@@ -55,6 +55,7 @@ commandstruct *pro_to_v(char *buf,int nbytes)
     nowcommand->opera ="";
     for(;buf[now] != '\r';now++)
      nowcommand->opera += buf[now];
+    //std::cout<<nowcommand->opera<<std::endl;
     now++;
     if(osum > 1)
     {
@@ -80,6 +81,8 @@ commandstruct *pro_to_v(char *buf,int nbytes)
       now++;
       nowcommand->value.push_back(p);
     }
+    now += 2;
+    //std::cout<<buf[now]<<std::endl;
   }
   return command;
 }

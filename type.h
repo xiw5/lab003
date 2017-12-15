@@ -52,6 +52,7 @@ struct clientstruct
   struct clientstruct *pre;
   int multi;
   int delmulti;
+  std::string afobuf;
   std::vector<commandstruct *> command;
   clientstruct()
   {

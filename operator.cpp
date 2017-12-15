@@ -7,6 +7,7 @@ std::string *set(commandstruct *command,serverstruct *s,clientstruct *c)
   std::string *p = new std::string;
   if(c->multi == 1)
   {
+    //std::cout<<"set"<<std::endl;
     *p = "+QUEUED";
     *p += '\r';
     *p += '\n';
@@ -23,6 +24,7 @@ std::string *set(commandstruct *command,serverstruct *s,clientstruct *c)
   *p = "+OK";
   *p += '\r';
   *p += '\n';
+  //std::cout<<"set"<<std::endl;
   return p;
 }
 
@@ -35,7 +37,7 @@ std::string *get(commandstruct *command,serverstruct *s,clientstruct *c)
     *p += '\r';
     *p += '\n';
     c->command.push_back(command);
-    std::cout<<c->command.size()<<std::endl;
+    //std::cout<<c->command.size()<<std::endl;
     return p;
   }
   //std::cout<<"ni zen me jin lai le"<<std::endl;
@@ -136,6 +138,7 @@ std::string *multi(clientstruct *c)
   *p = "+OK";
   *p += '\r';
   *p += '\n';
+  //std::cout<<"multi"<<std::endl;
   return p;
 }
 
@@ -153,9 +156,10 @@ std::string *discard(clientstruct *c)
 
 std::string *exec(serverstruct *s,clientstruct *c)
 {
-  std::cout<<"111"<<std::endl;
+  //std::cout<<"111"<<std::endl;
   //std::cout<<c->command[0]->value[0]<<std::endl;
-  std::cout<<"222"<<std::endl;
+  //std::cout<<"222"<<std::endl;
+  //std::cout<<"exec"<<std::endl;
   c->multi = 0;
   std::string *res = new std::string;
   char n[100];
@@ -186,7 +190,7 @@ std::string *exec(serverstruct *s,clientstruct *c)
     }
     //delete *it;
   }
-  std::cout<<*res<<std::endl;
+  //std::cout<<*res<<std::endl;
   //c->command.clear();
   return res;
 }

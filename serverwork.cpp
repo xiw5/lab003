@@ -61,7 +61,7 @@ serverstruct *buildserver()
 
 void running(serverstruct *s)
 {
-  std::ofstream fout("eof.txt",std::ios::out|std::ios::app);
+  std::ofstream fout("afo.txt",std::ios::out|std::ios::app);
   fd_set read_fds =  s->master;
 //  std::cout<<"11"<<std::endl;
   if(select(s->max_fd+1,&read_fds,nullptr,nullptr,nullptr) == -1)
@@ -110,14 +110,19 @@ void running(serverstruct *s)
       continue;
     }
     for(int i = 0;i<nbytes;i++)
-      fout<<buf[i];
-    fout<<"\0";
+      c->afobuf += buf[i];
     std::string *p = handle(buf,s,nbytes,c);
     int len = (*p).size();                                                              
     if(sendall(c->sockfd,(*p).c_str(),&len) == -1)
       std::cerr<<"send"<<std::endl;
+    if(c->multi == 0)
+    {
+      fout<<c->afobuf<<"@";
+      c->afobuf = "";
+    }
     delete p;
   }
+  fout.close();
   //std::cout<<"33"<<std::endl;
   if(FD_ISSET(s->listener,&read_fds))
   {
@@ -190,6 +195,8 @@ void deletecommand(struct commandstruct *command,clientstruct *c)
 std::string *handle(char *p,serverstruct *s,int nbytes,clientstruct *c)
 {
  // std::cout<<p<<std::endl;
+  p[nbytes] = '\0';
+  //std::cout<<p<<std::endl;
   struct commandstruct *command = pro_to_v(p,nbytes);
  // std::cout<<command->next<<std::endl;
  // std::cout<<command->key<<std::endl;
@@ -213,6 +220,7 @@ std::string *handle(char *p,serverstruct *s,int nbytes,clientstruct *c)
   {
     std::string * smalls;
     //std::cout<<"22"<<std::endl;
+    //std::cout<<tem->opera<<std::endl;
     if(tem->opera == SET)
     {
    //std::cout<<*(command->value[0])<<std::endl;
