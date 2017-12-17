@@ -61,7 +61,7 @@ serverstruct *buildserver()
 
 void running(serverstruct *s)
 {
-  std::ofstream fout("afo.txt",std::ios::out|std::ios::app);
+  //std::ofstream fout("afo.txt",std::ios::out|std::ios::app);
   fd_set read_fds =  s->master;
 //  std::cout<<"11"<<std::endl;
   if(select(s->max_fd+1,&read_fds,nullptr,nullptr,nullptr) == -1)
@@ -80,7 +80,7 @@ void running(serverstruct *s)
     char buf[MAXDATASIZE];
     int nbytes = recv(c->sockfd,buf,sizeof(buf),0);
     buf[nbytes] = '\0';
-    //std::cout<<buf<<std::endl;
+   // std::cout<<buf<<std::endl;
     if(nbytes == -1)
     {
       std::cerr<<"recv"<<std::endl;
@@ -89,7 +89,7 @@ void running(serverstruct *s)
     if(nbytes == 0)
     {
       std::cout<<c->sockfd<<" hang up "<<std::endl;
-      close(c->sockfd);
+     close(c->sockfd);
       FD_CLR(c->sockfd, &s->master);
       if(c->pre != nullptr)
         c->pre->next = c->next;
@@ -109,20 +109,22 @@ void running(serverstruct *s)
       delete c;
       continue;
     }
-    for(int i = 0;i<nbytes;i++)
-      c->afobuf += buf[i];
+    //for(int i = 0;i<nbytes;i++)
+      //c->afobuf += buf[i];
     std::string *p = handle(buf,s,nbytes,c);
-    int len = (*p).size();                                                              
+    int len = (*p).size();  
+    //std::string ss = "www";
+    //int len = 3;
     if(sendall(c->sockfd,(*p).c_str(),&len) == -1)
       std::cerr<<"send"<<std::endl;
-    if(c->multi == 0)
-    {
-      fout<<c->afobuf<<"@";
-      c->afobuf = "";
-    }
+   // if(c->multi == 0)
+    //{
+      //fout<<c->afobuf<<"@";
+   //   c->afobuf = "";
+  //  }
     delete p;
   }
-  fout.close();
+ // fout.close();
   //std::cout<<"33"<<std::endl;
   if(FD_ISSET(s->listener,&read_fds))
   {
@@ -249,5 +251,6 @@ std::string *handle(char *p,serverstruct *s,int nbytes,clientstruct *c)
     //return nottrue();
   }
   deletecommand(command,c);
+  //std::cout<<*res<<std::endl;
   return res;
 }

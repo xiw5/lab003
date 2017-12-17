@@ -11,7 +11,7 @@ int main()
     std::cerr<<"buildserver "<<std::endl;
     return 0;
   }
-  build_afo(s);
+ // build_afo(s);
   for(;;)
   {
     running(s);
